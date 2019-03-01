@@ -91,20 +91,20 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     cpu->reg[regA] = a + b; //add the value in two registers and store the result in registerA.
     break;
 
-    case ALU_CMP: //Compare the values in two registers. FL bits: 00000LGE
-    if (a < b) //L Less-than: during a CMP, set to 1 if registerA is less than registerB, zero otherwise.
-    {
-      cpu->FL = 0b00000100;
-    }
-    else if (b > a) //G Greater-than: during a CMP, set to 1 if registerA is greater than registerB, zero otherwise.
-    {
-      cpu->FL = 0b00000010;
-    }
-    else //E Equal: during a CMP, set to 1 if registerA is equal to registerB, zero otherwise.
-    {
-      cpu->FL = 0b00000001;
-    }
-    break;
+    // case ALU_CMP: //Compare the values in two registers. FL bits: 00000LGE
+    // if (a < b) //L Less-than: during a CMP, set to 1 if registerA is less than registerB, zero otherwise.
+    // {
+    //   cpu->FL = 0b00000100;
+    // }
+    // else if (b > a) //G Greater-than: during a CMP, set to 1 if registerA is greater than registerB, zero otherwise.
+    // {
+    //   cpu->FL = 0b00000010;
+    // }
+    // else //E Equal: during a CMP, set to 1 if registerA is equal to registerB, zero otherwise.
+    // {
+    //   cpu->FL = 0b00000001;
+    // }
+    // break;
   }
 }
 
@@ -162,26 +162,23 @@ void cpu_run(struct cpu *cpu)
       break;
 
       case CALL: //Calls a subroutine (function) at the address stored in the register.
-      SP--; //PUSH
-      cpu_ram_write(cpu, SP, cpu->reg[operandA]); //1. The address of the instruction directly after CALL is pushed onto the stack. This allows us to return to where we left off when the subroutine finishes executing.
+      SP--; //from PUSH
+      cpu_ram_write(cpu, SP, (cpu->PC + 2)); //1. The address of the instruction directly after CALL is pushed onto the stack. This allows us to return to where we left off when the subroutine finishes executing.
       cpu->PC = cpu->reg[operandA]; //2. The PC is set to the address stored in the given register. We jump to that location in RAM and execute the first instruction in the subroutine. The PC can move forward or backwards from its current location.
-      printf("CALLED\n");
       break;
 
       case RET: //Return from subroutine.
       cpu->PC = cpu->ram[SP];//Pop the value from the top of the stack and store it in the PC.
-      SP++; //POP
+      SP++; //from POP
       break;
 
-      case JMP: //Jump to the address stored in the given register.
-      cpu->PC = cpu->reg[operandA]; //1. Jump to the address stored in the given register.
-      printf("JUMPED\n"); //2. Set the PC to the address stored in the given register.
-      break;
+      // case JMP: //Jump to the address stored in the given register.
+      // cpu->PC = cpu->reg[operandA]; //1. Jump to the address stored in the given register.Set the PC to the address stored in the given register.
+      // break;
 
-      case CMP: //This is an instruction handled by the ALU.
-      alu(cpu, ALU_CMP, operandA, operandB);
-      printf("COMPARED\n"); 
-      break;
+      // case CMP: //This is an instruction handled by the ALU.
+      // alu(cpu, ALU_CMP, operandA, operandB);
+      // break;
 
       case PRN: //a pseudo-instruction that prints the numeric value stored in a register.
       printf("%d\n", cpu->reg[operandA]); 
@@ -205,7 +202,7 @@ void cpu_run(struct cpu *cpu)
 void cpu_init(struct cpu *cpu)
 {
   cpu->PC = 0; //PC and FL registers are cleared to 0.
-  cpu->FL = 0;
+  // cpu->FL = 0;
   memset(cpu->ram, 0, sizeof(cpu->reg)); //R0-R6 are cleared to 0
   memset(cpu->ram, 0, sizeof(cpu->ram)); //RAM is cleared to 0
   cpu->reg[7] = 0xF4; //R7 is set to 0xF4.
