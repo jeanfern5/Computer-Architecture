@@ -85,7 +85,7 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     }
     else //E Equal: during a CMP, set to 1 if registerA is equal to registerB, zero otherwise.
     {
-      cpu->FL = 0b00000001;
+      cpu->FL = cpu->FL| 0b00000001;
     }
     break;
   }
@@ -97,18 +97,20 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
 void cpu_run(struct cpu *cpu)
 {
   int running = 1; // True until we get a HLT instruction
-  unsigned char SP = cpu->reg[7]; //R7 is reserved as the stack pointer (SP)
   
   while (running) {
     // TODO
     // 1. Get the value of the current instruction (in address PC).
     unsigned char IR = cpu_ram_read(cpu, cpu->PC); // IR store results from memory address that's stored in register PC
+    unsigned char SP = cpu->reg[7]; //R7 is reserved as the stack pointer (SP)
 
     // 2. Figure out how many operands this next instruction requires
       //Some instructions requires up to the next two bytes of data _after_ the `PC` in memory to perform operations on.
     // 3. Get the appropriate value(s) of the operands following this instruction
     unsigned operandA = cpu_ram_read(cpu, (cpu->PC + 1));
     unsigned operandB = cpu_ram_read(cpu, (cpu->PC + 2));
+
+
 
     printf("TRACE: %02X: %02X   %02X %02X\n", cpu->PC, IR, operandA, operandB);
 
@@ -161,7 +163,23 @@ void cpu_run(struct cpu *cpu)
       break;
 
       case JMP: //Jump to the address stored in the given register.
-      cpu->PC = cpu->reg[operandA]; //Jump to the address stored in the given register.Set the PC to the address stored in the given register.
+      cpu->PC = cpu->reg[operandA]; //Set the PC to the address stored in the given register.
+      break;
+
+      case JEQ:
+      if (cpu->FL == 0b00000001) //if equal flag is set (true), 
+      {
+        cpu->PC = cpu->reg[operandA]; //jump to the address stored in the given register.
+      }
+      cpu->PC +=2;//if it doesn't jump
+      break;
+
+      case JNE:
+      if (cpu->FL == 0b00000000)//If E flag is clear (false, 0)
+      {
+        cpu->PC = cpu->reg[operandA]; //jump to the address stored in the given register.
+      }
+      cpu->PC += 2; //if it doesn't jump
       break;
 
       case PRN: //a pseudo-instruction that prints the numeric value stored in a register.
@@ -170,12 +188,12 @@ void cpu_run(struct cpu *cpu)
       break;
 
       case HLT: //halt the CPU and exit the emulator.
-        exit(0);
-        break;
+      running = 0;
+      break;
 
       default:
-        printf("unexpected instruction 0x%02X at 0x%02X\n", IR, cpu->PC);
-        exit(1);
+      printf("unexpected instruction 0x%02X at 0x%02X\n", IR, cpu->PC);
+      exit(1);
     }
   }
 }
@@ -186,7 +204,7 @@ void cpu_run(struct cpu *cpu)
 void cpu_init(struct cpu *cpu)
 {
   cpu->PC = 0; //PC and FL registers are cleared to 0.
-  // cpu->FL = 0;
+  cpu->FL = 0;
   memset(cpu->ram, 0, sizeof(cpu->reg)); //R0-R6 are cleared to 0
   memset(cpu->ram, 0, sizeof(cpu->ram)); //RAM is cleared to 0
   cpu->reg[7] = 0xF4; //R7 is set to 0xF4.
