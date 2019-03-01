@@ -29,7 +29,7 @@ enum alu_op { //enum often used for group of constants
 #define CALL 0b01010000
 #define RET  0b00010001
 #define CMP  0b10100111
-// #define JMP  0b01010100 
+#define JMP  0b01010100 
 #define PRN  0b01000111
 #define HLT  0b00000001
 

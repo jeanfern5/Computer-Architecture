@@ -160,9 +160,9 @@ void cpu_run(struct cpu *cpu)
       cpu->PC += 3;
       break;
 
-      // case JMP: //Jump to the address stored in the given register.
-      // cpu->PC = cpu->reg[operandA]; //1. Jump to the address stored in the given register.Set the PC to the address stored in the given register.
-      // break;
+      case JMP: //Jump to the address stored in the given register.
+      cpu->PC = cpu->reg[operandA]; //Jump to the address stored in the given register.Set the PC to the address stored in the given register.
+      break;
 
       case PRN: //a pseudo-instruction that prints the numeric value stored in a register.
       printf("%d\n", cpu->reg[operandA]); 
