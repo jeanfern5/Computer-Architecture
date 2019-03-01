@@ -93,7 +93,7 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     }
     else //E Equal: during a CMP, set to 1 if registerA is equal to registerB, zero otherwise.
     {
-      cpu->FL = cpu->FL| 0b00000001;
+      cpu->FL = 0b00000001;
     }
     break;
   }
@@ -118,9 +118,7 @@ void cpu_run(struct cpu *cpu)
     unsigned operandA = cpu_ram_read(cpu, (cpu->PC + 1));
     unsigned operandB = cpu_ram_read(cpu, (cpu->PC + 2));
 
-
-
-    printf("TRACE: %02X: %02X   %02X %02X\n", cpu->PC, IR, operandA, operandB);
+    // printf("TRACE: %02X: %02X   %02X %02X\n", cpu->PC, IR, operandA, operandB);
 
     // 4. switch() over it to decide on a course of action.
     switch(IR)
@@ -186,16 +184,20 @@ void cpu_run(struct cpu *cpu)
       if (cpu->FL == 0b00000001) //if equal flag is set (true), 
       {
         cpu->PC = cpu->reg[operandA]; //jump to the address stored in the given register.
+        break;
       }
-      cpu->PC +=2;//if it doesn't jump
+      cpu->PC += 2; //if it doesn't jump
       break;
 
       case JNE:
-      if (cpu->FL == 0b00000000)//If E flag is clear (false, 0)
+      if (cpu->FL != 0b00000001)//If equal flag is clear (false, 0)
       {
         cpu->PC = cpu->reg[operandA]; //jump to the address stored in the given register.
       }
-      cpu->PC += 2; //if it doesn't jump
+      else //if don't want to use else statement, do it like in JEQ and add a `break;` in the if statement
+      {
+        cpu->PC +=2;//if it doesn't jump
+      }
       break;
 
       case PRN: //a pseudo-instruction that prints the numeric value stored in a register.
