@@ -66,9 +66,17 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
   unsigned char b = cpu->reg[regB];
 
   switch (op) {
-    case ALU_MUL:
-      cpu->reg[regA] = a * b; //multiply the values in two registers together and store the result in registerA.
+    case ALU_AND:
+      cpu->reg[regA] = cpu->reg[regA] & cpu->reg[regB];
       break;
+
+    case ALU_OR:
+    cpu->reg[regA] = cpu->reg[regA] | cpu->reg[regB];
+    break;
+
+    case ALU_MUL:
+    cpu->reg[regA] = a * b; //multiply the values in two registers together and store the result in registerA.
+    break;
 
     case ALU_ADD:
     cpu->reg[regA] = a + b; //add the value in two registers and store the result in registerA.
@@ -122,6 +130,14 @@ void cpu_run(struct cpu *cpu)
       case LDI: //load "immediate", store a value in a register, or "set this register to this value".
       cpu->reg[operandA] = operandB; //Loads registerA with the value at the memory address stored in registerB.
       cpu->PC += 3; //moves PC down 3 lines
+      break;
+
+      case AND:
+      alu(cpu, ALU_AND, operandA, operandB);
+      break;
+
+      case OR:
+      alu(cpu, ALU_OR, operandA, operandB);
       break;
 
       case MUL: //This is an instruction handled by the ALU.

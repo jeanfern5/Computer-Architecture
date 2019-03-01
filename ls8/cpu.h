@@ -13,7 +13,9 @@ struct cpu {
 enum alu_op { //enum often used for group of constants
 	ALU_MUL,
 	ALU_ADD, 
-  ALU_CMP
+  ALU_CMP, 
+  ALU_AND, 
+  ALU_OR
 };
 
 // Instructions
@@ -22,6 +24,8 @@ enum alu_op { //enum often used for group of constants
 // hex literals should be used.
 // These instructions can be used in cpu_run().
 #define LDI  0b10000010
+#define AND  0b10101000 
+#define OR   0b10101010 
 #define MUL  0b10100010
 #define ADD  0b10100000
 #define PUSH 0b01000101 
