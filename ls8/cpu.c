@@ -55,23 +55,6 @@ void cpu_load(struct cpu *cpu, char *filename)
   }
 
   fclose(fp); //closes file
-
-  // //Hard-Coded Way:
-  // char data[DATA_LEN] = {
-  //   // From print8.ls8
-  //   0b10000010, // LDI R0,8
-  //   0b00000000,
-  //   0b00001000,
-  //   0b01000111, // PRN R0
-  //   0b00000000,
-  //   0b00000001  // HLT
-  // };
-
-  // int address = 0;
-
-  // for (int i = 0; i < DATA_LEN; i++) {
-  //   cpu->ram[address++] = data[i];
-  // }
 }
 
 /**
@@ -91,20 +74,20 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     cpu->reg[regA] = a + b; //add the value in two registers and store the result in registerA.
     break;
 
-    // case ALU_CMP: //Compare the values in two registers. FL bits: 00000LGE
-    // if (a < b) //L Less-than: during a CMP, set to 1 if registerA is less than registerB, zero otherwise.
-    // {
-    //   cpu->FL = 0b00000100;
-    // }
-    // else if (b > a) //G Greater-than: during a CMP, set to 1 if registerA is greater than registerB, zero otherwise.
-    // {
-    //   cpu->FL = 0b00000010;
-    // }
-    // else //E Equal: during a CMP, set to 1 if registerA is equal to registerB, zero otherwise.
-    // {
-    //   cpu->FL = 0b00000001;
-    // }
-    // break;
+    case ALU_CMP: //Compare the values in two registers. FL bits: 00000LGE
+    if (a < b) //L Less-than: during a CMP, set to 1 if registerA is less than registerB, zero otherwise.
+    {
+      cpu->FL = 0b00000100;
+    }
+    else if (b > a) //G Greater-than: during a CMP, set to 1 if registerA is greater than registerB, zero otherwise.
+    {
+      cpu->FL = 0b00000010;
+    }
+    else //E Equal: during a CMP, set to 1 if registerA is equal to registerB, zero otherwise.
+    {
+      cpu->FL = 0b00000001;
+    }
+    break;
   }
 }
 
@@ -172,12 +155,13 @@ void cpu_run(struct cpu *cpu)
       SP++; //from POP
       break;
 
+      case CMP: //This is an instruction handled by the ALU.
+      alu(cpu, ALU_CMP, operandA, operandB);
+      cpu->PC += 3;
+      break;
+
       // case JMP: //Jump to the address stored in the given register.
       // cpu->PC = cpu->reg[operandA]; //1. Jump to the address stored in the given register.Set the PC to the address stored in the given register.
-      // break;
-
-      // case CMP: //This is an instruction handled by the ALU.
-      // alu(cpu, ALU_CMP, operandA, operandB);
       // break;
 
       case PRN: //a pseudo-instruction that prints the numeric value stored in a register.

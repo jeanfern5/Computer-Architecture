@@ -551,44 +551,35 @@ In your challenge this week, you will demonstrate proficiency by adding _conditi
 ## Description
 
 In this code challenge, you will add _conditional jumps_ (AKA _conditional branching_) to your LS-8 emulator.
+
 ## Minimum Viable Product
 
-Your finished project must include all of the following requirements:
-
-- [ ] Add the `CMP` instruction and `equal` flag to your LS-8.
-
-- [ ] Add the `JMP` instruction.
-
-- [ ] Add the `JEQ` and `JNE` instructions.
-
-[See the LS-8 spec for details](https://github.com/LambdaSchool/Computer-Architecture/blob/master/LS8-spec.md)
-
-In your solution, it is essential that you follow best practices and produce
+ Your finished project must include all of the following requirements:
+ - [ ] Add the `CMP` instruction and `equal` flag to your LS-8.
+ - [ ] Add the `JMP` instruction.
+ - [ ] Add the `JEQ` and `JNE` instructions.
+ [See the LS-8 spec for details](https://github.com/LambdaSchool/Computer-Architecture/blob/master/LS8-spec.md)
+ In your solution, it is essential that you follow best practices and produce
 clean and professional results. Schedule time to review, refine, and assess your
 work and perform basic professional polishing including spell-checking and
 grammar-checking on your work. It is better to submit a challenge that meets MVP
 than one that attempts too much and does not.
-
-Validate your work through testing and ensure that your code operates as designed.
-
-[Here is some code](sctest.ls8) that exercises the above instructions. It should
+ Validate your work through testing and ensure that your code operates as designed.
+ [Here is some code](sctest.ls8) that exercises the above instructions. It should
 print:
-
-```
+ ```
 1
 4
 5
 ```
-
-```
+ ```
 # Code to test the Sprint Challenge
 #
 # Expected output:
 # 1
 # 4
 # 5
-
-10000010 # LDI R0,10
+ 10000010 # LDI R0,10
 00000000
 00001010
 10000010 # LDI R1,20
@@ -667,4 +658,4 @@ print:
 00000011
 # TEST5 (address 73):
 00000001 # HLT
-```
+```	```
