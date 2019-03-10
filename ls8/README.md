@@ -83,15 +83,37 @@ but you'll have to implement those three above instructions first!
 * Write a short 3-10-word description of what each file does.
   * ls8
     - cpu.c : where to write cpu functions
-      -> cpu_ram_read() (implemented)
-      -> cpu_ram_write() (implemented)
-      -> cpu_init() (completed)
-      -> cpu_run() (completed to be dynamic)
-      -> alu() (completed)
+      -> cpu_ram_read() - helper function
+      -> cpu_ram_write() - helper function
+      -> cpu_init() - initializes
+      -> cpu_run() 
+        --> LDI
+        --> MUL
+        --> ADD
+        --> PUSH
+        --> POP
+        --> CALL
+        --> RET
+        --> PRN
+        --> HLT
+      -> alu() 
+        --> ALU_MUL
+        --> ALU_ADD
     - cpu.h : holds all information about the CPU
       -> cpu struct
       -> enum alu_op
+        --> ALU_MUL
+        --> ALU_ADD
       -> defines instructions
+        --> LDI
+        --> MUL
+        --> ADD
+        --> PUSH
+        --> POP
+        --> CALL
+        --> RET
+        --> PRN
+        --> HLT
     - ls8.c : contains int main(void)
     * examples
       - there is are examples of each of the files from asm directory
@@ -347,7 +369,6 @@ Whether you do a `switch` or a branch table or anything else is up to you.
 
 ## Step 11: Implement System Stack
 
-
 All CPUs manage a _stack_ that can be used to store information temporarily.
 This stack resides in main memory and typically starts at the top of memory (at
 a high address) and grows _downward_ as things are pushed on. The LS-8 is no
@@ -369,6 +390,7 @@ If you run `./ls8 examples/stack.ls8` you should see the output:
 ```
 
 ## Step 12: Implement Subroutine Calls
+
 
 Back in the old days, functions were called _subroutines_. In machine code, subroutines
 enable you to jump to any address with the `CALL` instruction, and then return
