@@ -6,45 +6,7 @@
 #define DATA_LEN 6
 
 /**
- * Load the binary bytes from a .ls8 source file into a RAM array
- */
-void cpu_load(struct cpu *cpu)
-{
-  char data[DATA_LEN] = {
-    // From print8.ls8
-    0b10000010, // LDI R0,8
-    0b00000000,
-    0b00001000,
-    0b01000111, // PRN R0
-    0b00000000,
-    0b00000001  // HLT
-  };
-
-  int address = 0;
-
-  for (int i = 0; i < DATA_LEN; i++) {
-    cpu->ram[address++] = data[i];
-  }
-
-  // TODO: Replace this with something less hard-coded
-}
-
-/**
- * ALU
- */
-void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
-{
-  switch (op) {
-    case ALU_MUL:
-      // TODO
-      break;
-
-    // TODO: implement more ALU ops
-  }
-}
-
-/**
- * Reads memory data (MDR) from memory address (MAR) - cpu_run() helper function
+ * Reads memory data (MDR) from memory address (MAR) - helper function
  */
 unsigned char cpu_ram_read(struct cpu *cpu, unsigned char MAR)
 {
@@ -52,11 +14,78 @@ unsigned char cpu_ram_read(struct cpu *cpu, unsigned char MAR)
 }
 
 /**
- * Writes memory data (MDR) to memory address (MAR) - cpu_run() helper function
+ * Writes memory data (MDR) to memory address (MAR) - helper function
  */
 void cpu_ram_write(struct cpu *cpu, unsigned char MAR, unsigned char MDR)
 {
   cpu->ram[MAR] = MDR;
+}
+
+/**
+ * Load the binary bytes from a .ls8 source file into a RAM array
+ */
+void cpu_load(struct cpu *cpu, char *filename)
+{
+  FILE *fp = fopen(filename, "r"); //opens file
+
+  int address = 0;
+  char line[8192];
+
+  if (fp != NULL)
+  {
+    //read in its contents line by line, 
+    while (fgets(line, sizeof(line), fp) != NULL)
+    {
+      char *endptr;
+      unsigned char bistrValue = strtoul(line, &endptr, 2); // OR strtoul(line, NULL , 2);
+
+      //ignore everything after a `#`, since that's a comment.
+      if (endptr == line)
+      {
+        continue;
+      }
+      
+      //save appropriate data into RAM
+      cpu_ram_write(cpu, address++, bistrValue); //OR cpu->ram[address++] = bistrValue;
+    }
+  }
+  else
+  {
+    fprintf(stderr, "%s filename was not found.\n", filename);
+  }
+
+  fclose(fp); //closes file
+
+  // //Hard-Coded Way:
+  // char data[DATA_LEN] = {
+  //   // From print8.ls8
+  //   0b10000010, // LDI R0,8
+  //   0b00000000,
+  //   0b00001000,
+  //   0b01000111, // PRN R0
+  //   0b00000000,
+  //   0b00000001  // HLT
+  // };
+
+  // int address = 0;
+
+  // for (int i = 0; i < DATA_LEN; i++) {
+  //   cpu->ram[address++] = data[i];
+  // }
+}
+
+/**
+ * ALU handles MUL instruction
+ */
+void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
+{
+  switch (op) {
+    case ALU_MUL:
+      cpu->reg[regA] = cpu->reg[regA] * cpu->reg[regB];
+      break;
+
+    // TODO: implement more ALU ops
+  }
 }
 
 /**
@@ -86,12 +115,17 @@ void cpu_run(struct cpu *cpu)
       // 6. Move the PC to the next instruction.
       case LDI: //load "immediate", store a value in a register, or "set this register to this value".
       cpu->reg[operandA] = operandB; //Loads registerA with the value at the memory address stored in registerB.
-      cpu->PC += 3; //moves PC to PRN
+      cpu->PC += 3; //moves PC down 3 lines
+      break;
+
+      case MUL: //multiply the values in two registers together and store the result in registerA.
+      alu(cpu, ALU_MUL, operandA, operandB);
+      cpu->PC += 3; //moves PC down 3 lines
       break;
 
       case PRN: //a pseudo-instruction that prints the numeric value stored in a register.
       printf("%d\n", cpu->reg[operandA]); 
-      cpu->PC += 2; //moves PC to HLT
+      cpu->PC += 2; //moves PC down 2 lines
       break;
 
       case HLT: //halt the CPU and exit the emulator.

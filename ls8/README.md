@@ -86,9 +86,12 @@ but you'll have to implement those three above instructions first!
       -> cpu_ram_read() (implemented)
       -> cpu_ram_write() (implemented)
       -> cpu_init() (completed)
-      -> cpu_run() (completed)
+      -> cpu_run() (completed to be dynamic)
+      -> alu() (completed)
     - cpu.h : holds all information about the CPU
       -> cpu struct
+      -> enum alu_op
+      -> defines instructions
     - ls8.c : contains int main(void)
     * examples
       - there is are examples of each of the files from asm directory
@@ -222,11 +225,9 @@ so you can look in `argv[1]` for the name of the file to load.
 In `load_cpu()`, you will now want to use those command line arguments to open a file, read in its contents line by line, and save appropriate data into RAM. 
 
 As you process lines from the file, you should be on the lookout for blank lines
-(ignore them), and you should ignore everything after a `#`, since that's a
-comment.
+(ignore them), and you should ignore everything after a `#`, since that's a comment.
 
-You'll have to convert the binary strings to integer values to store in RAM. The
-built-in `strtoul()` library function might help you here.
+You'll have to convert the binary strings to integer values to store in RAM. The built-in `strtoul()` library function might help you here.
 
 ## Step 9: Implement a Multiply and Print the Result
 
@@ -258,8 +259,7 @@ One you run it with `./ls8 examples/mult.ls8`, you should see:
 Check the LS-8 spec for what the `MUL` instruction does.
 
 > Note: `MUL` is the responsiblity of the ALU, so it would be
-nice if your code eventually called the `alu()` function with appropriate
-arguments to get the work done.
+nice if your code eventually called the `alu()` function with appropriate arguments to get the work done.
 > 
 
 
