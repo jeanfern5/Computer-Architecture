@@ -55,23 +55,6 @@ void cpu_load(struct cpu *cpu, char *filename)
   }
 
   fclose(fp); //closes file
-
-  // //Hard-Coded Way:
-  // char data[DATA_LEN] = {
-  //   // From print8.ls8
-  //   0b10000010, // LDI R0,8
-  //   0b00000000,
-  //   0b00001000,
-  //   0b01000111, // PRN R0
-  //   0b00000000,
-  //   0b00000001  // HLT
-  // };
-
-  // int address = 0;
-
-  // for (int i = 0; i < DATA_LEN; i++) {
-  //   cpu->ram[address++] = data[i];
-  // }
 }
 
 /**
@@ -83,28 +66,36 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
   unsigned char b = cpu->reg[regB];
 
   switch (op) {
-    case ALU_MUL:
-      cpu->reg[regA] = a * b; //multiply the values in two registers together and store the result in registerA.
+    case ALU_AND:
+      cpu->reg[regA] = cpu->reg[regA] & cpu->reg[regB];
       break;
+
+    case ALU_OR:
+    cpu->reg[regA] = cpu->reg[regA] | cpu->reg[regB];
+    break;
+
+    case ALU_MUL:
+    cpu->reg[regA] = a * b; //multiply the values in two registers together and store the result in registerA.
+    break;
 
     case ALU_ADD:
     cpu->reg[regA] = a + b; //add the value in two registers and store the result in registerA.
     break;
 
-    // case ALU_CMP: //Compare the values in two registers. FL bits: 00000LGE
-    // if (a < b) //L Less-than: during a CMP, set to 1 if registerA is less than registerB, zero otherwise.
-    // {
-    //   cpu->FL = 0b00000100;
-    // }
-    // else if (b > a) //G Greater-than: during a CMP, set to 1 if registerA is greater than registerB, zero otherwise.
-    // {
-    //   cpu->FL = 0b00000010;
-    // }
-    // else //E Equal: during a CMP, set to 1 if registerA is equal to registerB, zero otherwise.
-    // {
-    //   cpu->FL = 0b00000001;
-    // }
-    // break;
+    case ALU_CMP: //Compare the values in two registers. FL bits: 00000LGE
+    if (a < b) //L Less-than: during a CMP, set to 1 if registerA is less than registerB, zero otherwise.
+    {
+      cpu->FL = 0b00000100;
+    }
+    else if (b > a) //G Greater-than: during a CMP, set to 1 if registerA is greater than registerB, zero otherwise.
+    {
+      cpu->FL = 0b00000010;
+    }
+    else //E Equal: during a CMP, set to 1 if registerA is equal to registerB, zero otherwise.
+    {
+      cpu->FL = 0b00000001;
+    }
+    break;
   }
 }
 
@@ -114,12 +105,12 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
 void cpu_run(struct cpu *cpu)
 {
   int running = 1; // True until we get a HLT instruction
-  unsigned char SP = cpu->reg[7]; //R7 is reserved as the stack pointer (SP)
   
   while (running) {
     // TODO
     // 1. Get the value of the current instruction (in address PC).
     unsigned char IR = cpu_ram_read(cpu, cpu->PC); // IR store results from memory address that's stored in register PC
+    unsigned char SP = cpu->reg[7]; //R7 is reserved as the stack pointer (SP)
 
     // 2. Figure out how many operands this next instruction requires
       //Some instructions requires up to the next two bytes of data _after_ the `PC` in memory to perform operations on.
@@ -127,7 +118,7 @@ void cpu_run(struct cpu *cpu)
     unsigned operandA = cpu_ram_read(cpu, (cpu->PC + 1));
     unsigned operandB = cpu_ram_read(cpu, (cpu->PC + 2));
 
-    printf("TRACE: %02X: %02X   %02X %02X\n", cpu->PC, IR, operandA, operandB);
+    // printf("TRACE: %02X: %02X   %02X %02X\n", cpu->PC, IR, operandA, operandB);
 
     // 4. switch() over it to decide on a course of action.
     switch(IR)
@@ -137,6 +128,14 @@ void cpu_run(struct cpu *cpu)
       case LDI: //load "immediate", store a value in a register, or "set this register to this value".
       cpu->reg[operandA] = operandB; //Loads registerA with the value at the memory address stored in registerB.
       cpu->PC += 3; //moves PC down 3 lines
+      break;
+
+      case AND:
+      alu(cpu, ALU_AND, operandA, operandB);
+      break;
+
+      case OR:
+      alu(cpu, ALU_OR, operandA, operandB);
       break;
 
       case MUL: //This is an instruction handled by the ALU.
@@ -172,13 +171,34 @@ void cpu_run(struct cpu *cpu)
       SP++; //from POP
       break;
 
-      // case JMP: //Jump to the address stored in the given register.
-      // cpu->PC = cpu->reg[operandA]; //1. Jump to the address stored in the given register.Set the PC to the address stored in the given register.
-      // break;
+      case CMP: //This is an instruction handled by the ALU.
+      alu(cpu, ALU_CMP, operandA, operandB);
+      cpu->PC += 3;
+      break;
 
-      // case CMP: //This is an instruction handled by the ALU.
-      // alu(cpu, ALU_CMP, operandA, operandB);
-      // break;
+      case JMP: //Jump to the address stored in the given register.
+      cpu->PC = cpu->reg[operandA]; //Set the PC to the address stored in the given register.
+      break;
+
+      case JEQ:
+      if (cpu->FL == 0b00000001) //if equal flag is set (true), 
+      {
+        cpu->PC = cpu->reg[operandA]; //jump to the address stored in the given register.
+        break;
+      }
+      cpu->PC += 2; //if it doesn't jump
+      break;
+
+      case JNE:
+      if (cpu->FL != 0b00000001)//If equal flag is clear (false, 0)
+      {
+        cpu->PC = cpu->reg[operandA]; //jump to the address stored in the given register.
+      }
+      else //if don't want to use else statement, do it like in JEQ and add a `break;` in the if statement
+      {
+        cpu->PC +=2;//if it doesn't jump
+      }
+      break;
 
       case PRN: //a pseudo-instruction that prints the numeric value stored in a register.
       printf("%d\n", cpu->reg[operandA]); 
@@ -186,12 +206,12 @@ void cpu_run(struct cpu *cpu)
       break;
 
       case HLT: //halt the CPU and exit the emulator.
-        exit(0);
-        break;
+      running = 0;
+      break;
 
       default:
-        printf("unexpected instruction 0x%02X at 0x%02X\n", IR, cpu->PC);
-        exit(1);
+      printf("unexpected instruction 0x%02X at 0x%02X\n", IR, cpu->PC);
+      exit(1);
     }
   }
 }
@@ -202,7 +222,7 @@ void cpu_run(struct cpu *cpu)
 void cpu_init(struct cpu *cpu)
 {
   cpu->PC = 0; //PC and FL registers are cleared to 0.
-  // cpu->FL = 0;
+  cpu->FL = 0;
   memset(cpu->ram, 0, sizeof(cpu->reg)); //R0-R6 are cleared to 0
   memset(cpu->ram, 0, sizeof(cpu->ram)); //RAM is cleared to 0
   cpu->reg[7] = 0xF4; //R7 is set to 0xF4.
